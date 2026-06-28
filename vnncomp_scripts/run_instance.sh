@@ -1,5 +1,5 @@
 #!/bin/bash
-# example run_benchmark.sh script for VNNCOMP for nnenum 
+# example run_benchmark.sh script for VNNCOMP for nnenum
 # six arguments, first is "v1", second is a benchmark category itentifier string such as "acasxu", third is path to the .onnx file, fourth is path to .vnnlib file, fifth is a path to the results file, and sixth is a timeout in seconds.
 # Stanley Bak, Feb 2021
 
@@ -37,7 +37,9 @@ export OMP_NUM_THREADS=1
 # conda_path = ${HOME}/miniconda/bin
 # py_pip_path = ${HOME}/miniconda/envs/nnenumenv/bin # path for python, pip, grbprobe
 # ${HOME}/anaconda3/envs/nnenumenv/bin/python -m nnenum.nnenum -o "$ONNX_FILE" -v "$VNNLIB_FILE" -t "$TIMEOUT" -f "$RESULTS_FILE" -s "$CATEGORY"
-python -m nnenum.nnenum -o "$ONNX_FILE" -v "$VNNLIB_FILE" -t "$TIMEOUT" -f "$RESULTS_FILE" -s "$CATEGORY"
+#SDW 2026-06-28;# python -m nnenum.nnenum -o "$ONNX_FILE" -v "$VNNLIB_FILE" -t "$TIMEOUT" -f "$RESULTS_FILE" -s "$CATEGORY"
+#SDW 2026-06-28; commented the line above in favor of the one below, which uses miniconda.
+${HOME}/miniconda/envs/nnenumenv/bin/python -m nnenum.nnenum -o "$ONNX_FILE" -v "$VNNLIB_FILE" -t "$TIMEOUT" -f "$RESULTS_FILE" -s "$CATEGORY"
 
 
 ####pipenv####

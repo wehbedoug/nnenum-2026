@@ -38,10 +38,10 @@ DIR=$(dirname $(dirname $(realpath $0)))
 # # Gurobi
 # cd ~/
 # wget https://packages.gurobi.com/9.1/gurobi9.1.2_linux64.tar.gz
-# tar -xzvf gurobi9.1.2_linux64.tar.gz 
-# rm gurobi9.1.2_linux64.tar.gz 
-# sudo mv gurobi912/ /opt/ 
-# # mv gurobi912/ /opt/ 
+# tar -xzvf gurobi9.1.2_linux64.tar.gz
+# rm gurobi9.1.2_linux64.tar.gz
+# sudo mv gurobi912/ /opt/
+# # mv gurobi912/ /opt/
 # cd /opt/gurobi912/linux64/
 # $pipenv_python setup.py install
 
