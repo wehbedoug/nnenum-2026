@@ -45,7 +45,7 @@ def exec_relus_up_to(state, index):
     Timers.toc('exec_relus_up_to')
 
 def sort_splits(layer_bounds, splits):
-    '''sort splitting neurons according to 
+    '''sort splitting neurons according to
 
     Settings.SPLIT_SMALLEST and Settings.SPLIT_LARGEST
     '''
@@ -58,7 +58,7 @@ def sort_splits(layer_bounds, splits):
         sizes = layer_bounds[splits, 1] - layer_bounds[splits, 0]
 
         reverse = Settings.SPLIT_ORDER == Settings.SPLIT_LARGEST
-        
+
         new_branches = [n for _, n in sorted(zip(sizes, splits), reverse=reverse)]
         rv = np.array(new_branches)
     else:
@@ -68,7 +68,7 @@ def sort_splits(layer_bounds, splits):
 
         for sindex in splits:
             sizes.append(min(layer_bounds[sindex, 1], -layer_bounds[sindex, 0]))
-                         
+
         reverse = True
 
         new_branches = [n for _, n in sorted(zip(sizes, splits), reverse=reverse)]
@@ -87,7 +87,7 @@ class OutputBounds(Freezable):
         '''
 
         self.prefilter = prefilter_parent
-        
+
         self.layer_bounds = None # layer bounds for branching neurons
         self.branching_neurons = None
 
@@ -132,9 +132,9 @@ class OutputBounds(Freezable):
         self.branching_neurons = sort_splits(self.layer_bounds, self.branching_neurons)
 
         Timers.toc('recompute_bounds')
-                                
+
     def split(self, other_prefilter, i, self_gets_positive):
-        '''a star with this prefilter is being split along neuron i, 
+        '''a star with this prefilter is being split along neuron i,
 
         return a copy of the output bounds for the other star, adjusting
         the bounds based on how we split
@@ -183,7 +183,7 @@ class Prefilter(Freezable):
         self.simulation = star.minimize_vec(None, return_io=True)
 
         box_bounds = star.get_input_box_bounds()
-        
+
         self.zono = Zonotope(star.bias, star.a_mat, box_bounds)
 
     def init_from_uncompressed_box(self, uncompressed_init_box, star, box_bounds):
@@ -203,7 +203,7 @@ class Prefilter(Freezable):
             if Settings.COMPRESS_INIT_BOX:
                 if abs(i[1] - i[0]) > tol:
                     sim_input.append(mid)
-            else:   
+            else:
                 if not Settings.SKIP_COMPRESSED_CHECK:
                     assert abs(i[1] - i[0]) > tol, f"init box looks compressed (row {row} is range {i}), " + \
                         "use Settings.SKIP_COMPRESSED_CHECK to disable"
@@ -317,7 +317,7 @@ class Prefilter(Freezable):
         if Settings.CONTRACT_ZONOTOPE_LP:
             row = pos_star.get_row(i)
             bias = pos_star.bias[i]
-            
+
             Timers.tic("contract_zonotope_lp")
             pos.zono.contract_lp(pos_star, -row, bias)
             neg.zono.contract_lp(neg_star, row, -bias)
@@ -377,4 +377,4 @@ class Prefilter(Freezable):
             self.simulation[1][zero_indices] = 0
 
         Timers.toc('assign_zeros')
-        
+

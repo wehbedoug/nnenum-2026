@@ -30,10 +30,10 @@ class LpStarState(Freezable):
     #                '++++++-+++-++---+++----++-+++-++'
 
     def __init__(self, uncompressed_init_box=None, spec=None, safe_spec_list=None):
-        
+
         self.star = None
         self.prefilter = None
-        
+
         self.cur_layer = 0
         self.work_frac = 1.0 # fraction of work represented by this star
 
@@ -89,7 +89,7 @@ class LpStarState(Freezable):
         if n > 0:
             str_list = [str(s) for s in self.prefilter.output_bounds.branching_neurons]
             split_str = f"{n} splits remaining: " + ", ".join(str_list)
-        
+
         return f"LpStateState at layer {self.cur_layer} with {split_str}"
 
     def branch_str(self):
@@ -379,7 +379,8 @@ class LpStarState(Freezable):
             self.prefilter.zono.center = self.star.bias
 
             self.prefilter.apply_linear_layer(layer, self.star)
-            self.prefilter.apply_linear_layer(layer, self.star)
+            #SDW 2026-06-28: Why are there two of these? Commenting one out...
+            #self.prefilter.apply_linear_layer(layer, self.star)
 
         Timers.toc('starstate.apply_linear_layer')
 
@@ -409,7 +410,7 @@ class LpStarState(Freezable):
 
         child = LpStarState()
         child.star = self.star.copy()
-            
+
         # prefilter gets copied later
 
         if self.safe_spec_list is not None:
@@ -444,11 +445,11 @@ class LpStarState(Freezable):
             pos, neg = self, child
         else:
             neg, pos = self, child
-        
+
         ### ADD INITIAL STATE INTERSECTION
         row = self.star.get_row(i)
         bias = self.star.bias[i]
-        
+
         # pos gets output >= 0
         # neg gets output <= 0
 
@@ -479,7 +480,7 @@ class LpStarState(Freezable):
 
         else:
             rv = child
-            
+
             if self_gets_positive:
                 pos.star.lpi.add_dense_row(-row, bias)
             else:
@@ -528,7 +529,7 @@ class LpStarState(Freezable):
         assert isinstance(layer, ReluLayer)
         assert self.prefilter.output_bounds is not None
         assert self.prefilter.output_bounds.branching_neurons.size > 0
-        
+
         index = self.prefilter.output_bounds.branching_neurons[0]
 
         rv = self.split_enumerate(index, network, spec, start_time)

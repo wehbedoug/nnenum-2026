@@ -178,7 +178,7 @@ class NeuralNetwork(Freezable):
             and each layer-list is a list of the branching decisions taken by each neuron. For layers with ReLUs, this
             will be True/False values (True if positive branch is taken), for max pooling layers these will be ints, or
             lists of ints (if multiple max values are equal)
-        
+
         otherwise, just returns output
         '''
 
@@ -285,7 +285,7 @@ class ReluLayer(Freezable):
 
         if save_branching is True, returns (output, branch_list), where branch_list is a list of booleans for each
             neuron in the layer that is True if the nonnegative branch of the ReLU was taken, False if negative
- 
+
         otherwise, just returns output
         '''
 
@@ -304,7 +304,7 @@ class ReluLayer(Freezable):
                 if self.filter_func is not None:
                     if not self.filter_func(i):
                         continue
-                    
+
                 branch_list.append(val >= 0)
 
         if self.filter_func is None:
@@ -319,13 +319,13 @@ class ReluLayer(Freezable):
                     res.append(max(0, val))
 
             state = np.array(res, dtype=float)
-            
+
         rv = nn_unflatten(state, self.shape)
 
         rv = (rv, branch_list) if save_branching else rv
 
         Timers.toc('execute relu')
-        
+
         return rv
 
 class ConstantLayer(Freezable):
@@ -617,12 +617,12 @@ class AddLayer(Freezable):
         'apply the linear transformation part of the layer to the passed-in deeppoly weights (not relu)'
         ubconst_nl = nn_flatten(self.vec)  # upper bounds constants of new layer
         lbconst_nl = nn_flatten(self.vec)  # lower bounds constants of new layer
-        
+
         # back substitution
         updated_ubconst_nl = deeppoly.ubconst + ubconst_nl
 
         updated_lbconst_nl = deeppoly.ubconst + lbconst_nl
-        
+
         deeppoly.ubconst = updated_ubconst_nl
         deeppoly.lbconst = updated_lbconst_nl
 
@@ -636,7 +636,7 @@ class AddLayer(Freezable):
 
     def execute(self, state):
         '''execute on a concrete state
- 
+
         returns output
         '''
 
@@ -720,7 +720,7 @@ class MatMulLayer(Freezable):
 
             assert expected_inputs == mat.shape[1], f"MatMulLayer matrix shape was {mat.shape}, but " + \
                 f"prev_layer_output_shape {prev_layer_output_shape} needs {expected_inputs} columns"
-        
+
         self.freeze_attrs()
 
     def __str__(self):
@@ -759,7 +759,7 @@ class MatMulLayer(Freezable):
         'apply the linear transformation part of the layer to the passed-in deeppoly weights (not relu)'
         ubcoef_nl = self.mat  # upper bounds coefficients of new layer
         lbcoef_nl = self.mat  # lower bounds coefficients of new layer
-        
+
         # back substitution
         updated_ubcoef_nl = np.where(ubcoef_nl >= 0, ubcoef_nl, 0) @ deeppoly.ubcoef
         updated_ubcoef_nl += np.where(ubcoef_nl < 0, ubcoef_nl, 0) @ deeppoly.lbcoef
@@ -770,7 +770,7 @@ class MatMulLayer(Freezable):
         updated_lbcoef_nl += np.where(lbcoef_nl < 0, lbcoef_nl, 0) @ deeppoly.ubcoef
         updated_lbconst_nl = np.where(lbcoef_nl >= 0, lbcoef_nl, 0) @ deeppoly.lbconst
         updated_lbconst_nl += np.where(lbcoef_nl < 0, lbcoef_nl, 0) @ deeppoly.ubconst
-        
+
         deeppoly.ubcoef = updated_ubcoef_nl
         deeppoly.ubconst = updated_ubconst_nl
         deeppoly.lbcoef = updated_lbcoef_nl
@@ -783,10 +783,10 @@ class MatMulLayer(Freezable):
         deeppoly.lbs += np.where(deeppoly.lbcoef < 0, deeppoly.lbcoef, 0) @ deeppoly.inputbounds[:, 1]
         deeppoly.lbs += deeppoly.lbconst
 
-    
+
     def execute(self, state):
         '''execute on a concrete state
- 
+
         returns output
         '''
 
@@ -802,7 +802,7 @@ class MatMulLayer(Freezable):
         assert rv.shape == self.get_output_shape()
 
         Timers.toc('execute matmul')
-        
+
         return rv
 
 class FullyConnectedLayer(Freezable):
@@ -817,7 +817,7 @@ class FullyConnectedLayer(Freezable):
 
         if isinstance(biases, list):
             biases = np.array(biases, dtype=float)
-        
+
         self.layer_num = layer_num
         self.weights = weights
         self.biases = biases
@@ -840,7 +840,7 @@ class FullyConnectedLayer(Freezable):
 
             assert expected_inputs == weights.shape[1], f"FC Layer weight matrix shape was {weights.shape}, but " + \
                 f"prev_layer_output_shape {prev_layer_output_shape} needs {expected_inputs} columns"
-        
+
         self.freeze_attrs()
 
     def __str__(self):
@@ -880,15 +880,15 @@ class FullyConnectedLayer(Freezable):
 
         zono.mat_t = np.dot(self.weights, zono.mat_t)
         zono.center = np.dot(self.weights, zono.center) + self.biases
-    
+
     def transform_deeppoly(self, deeppoly):
         'apply the linear transformation part of the layer to the passed-in deeppoly weights (not relu)'
-        
+
         ubcoef_nl = self.weights  # upper bounds coefficients of new layer
         ubconst_nl = self.biases  # upper bounds constants of new layer
         lbcoef_nl = self.weights  # lower bounds coefficients of new layer
         lbconst_nl = self.biases  # lower bounds constants of new layer
-        
+
         # back substitution
         updated_ubcoef_nl = np.where(ubcoef_nl >= 0, ubcoef_nl, 0) @ deeppoly.ubcoef
         updated_ubcoef_nl += np.where(ubcoef_nl < 0, ubcoef_nl, 0) @ deeppoly.lbcoef
@@ -901,7 +901,7 @@ class FullyConnectedLayer(Freezable):
         updated_lbconst_nl = np.where(lbcoef_nl >= 0, lbcoef_nl, 0) @ deeppoly.lbconst
         updated_lbconst_nl += np.where(lbcoef_nl < 0, lbcoef_nl, 0) @ deeppoly.ubconst
         updated_lbconst_nl += lbconst_nl
-        
+
         deeppoly.ubcoef = updated_ubcoef_nl
         deeppoly.ubconst = updated_ubconst_nl
         deeppoly.lbcoef = updated_lbcoef_nl
@@ -916,7 +916,7 @@ class FullyConnectedLayer(Freezable):
 
     def execute(self, state):
         '''execute the fully connected layer on a concrete state
- 
+
         returns output
         '''
 
@@ -936,7 +936,7 @@ class FullyConnectedLayer(Freezable):
         assert rv.shape == self.get_output_shape()
 
         Timers.toc('execute fully connected')
-        
+
         return rv
 
 class Convolutional2dLayer(Freezable):
@@ -1873,8 +1873,8 @@ class Convolutional2dLayer(Freezable):
         if save_branching is True, returns (output, branch_list), where branch_list is a list of booleans for each
             relu neuron that is True if input is nonnegative and False otherwise
 
-        if zero_bias is True, use a zero bias instead of what's in the layer (used in ImageStar computations)       
- 
+        if zero_bias is True, use a zero bias instead of what's in the layer (used in ImageStar computations)
+
         otherwise, just returns output
         '''
 
@@ -2159,7 +2159,7 @@ class PoolingLayer(Freezable):
 
     def __str__(self):
         s = self.kernel_size
-        
+
         return f'[PoolingLayer ({self.method}) {s}x{s} with stride {self.stride}, ' + \
                f'input shape {self.get_input_shape()} and output shape {self.get_output_shape()}]'
 
@@ -2210,12 +2210,12 @@ class PoolingLayer(Freezable):
     # https://stackoverflow.com/questions/42463172/how-to-perform-max-mean-pooling-on-a-2d-array-using-numpy
     def _execute_without_branching(self, state):
         'fast max/mean pooling without storing branching information'
-        
+
         ksize = self.kernel_size
 
         ny = state.shape[0] // ksize
         nx = state.shape[1] // ksize
-        
+
         new_shape = (ny, ksize, nx, ksize) + state.shape[2:]
 
         if self.method == 'max':
@@ -2236,12 +2236,12 @@ class PoolingLayer(Freezable):
 
         Timers.tic('execute_pooling_with_branching')
 
-        ksize = self.kernel_size 
+        ksize = self.kernel_size
 
         height = state.shape[0] // ksize
         width = state.shape[1] // ksize
         depth = state.shape[2]
-        
+
         if self.method == 'max':
             output = np.full((height, width, depth), -np.inf, dtype=float)
             branch_list = [None] * (depth * width * height)
@@ -2251,7 +2251,7 @@ class PoolingLayer(Freezable):
 
         for d in range(state.shape[2]):
             depth_offset = d * (width * height)
-                            
+
             for row_index in range(state.shape[0]):
                 output_row = row_index // ksize
                 height_offset = output_row * width
@@ -2263,7 +2263,7 @@ class PoolingLayer(Freezable):
 
                     if self.method == 'max':
                         epsilon = 1e-9
-                        
+
                         if val - epsilon > output[output_row, block_index, d]:
                             # new max value
                             output[output_row, block_index, d] = val
@@ -2286,18 +2286,18 @@ class PoolingLayer(Freezable):
                                 branch_list[bindex] = [branch_list[bindex], mindex]
                             else:
                                 branch_list[bindex].append(mindex)
-                            
+
                     else:
                         output[output_row, block_index, d] += val
 
         if self.method == 'mean':
             divider = self.kernel_size**2
             output = output / divider
-            
+
         rv = (output, branch_list)
 
         Timers.toc('execute_pooling_with_branching')
-            
+
         return rv
 
 def images_to_init_box(min_image, max_image):
@@ -2351,7 +2351,7 @@ def convert_biases(biases):
     for biases_vec in biases:
         bias_ar = np.array(biases_vec, dtype=float)
         bias_ar.shape = (len(biases_vec),)
-        
+
         layers.append(bias_ar)
 
     # this prevents python from attempting to broadcast the layers together
@@ -2385,7 +2385,7 @@ def weights_biases_to_nn(weights, biases, dtype=None):
         if dtype is not None:
             layer_weights = layer_weights.astype(dtype)
             layer_biases = layer_biases.astype(dtype)
-        
+
         layers.append(FullyConnectedLayer(index, layer_weights, layer_biases))
         index += 1
 
